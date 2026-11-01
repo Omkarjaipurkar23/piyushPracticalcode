@@ -1,0 +1,26 @@
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('punkt_tab')
+
+file = open("/Users/sanikadhide/Desktop/IR/sam.rtf", "r")
+
+text = file.read()
+file.close()
+
+tokens = word_tokenize(text.lower())
+print("Tokens:", tokens)
+
+stop_words = set(stopwords.words('english'))
+filtered_tokens = [word for word in tokens if word.isalpha() and word not in stop_words]
+
+print("\nAfter Stop Word Removal:", filtered_tokens)
+
+stemmer = PorterStemmer()
+stemmed_tokens = [stemmer.stem(word) for word in filtered_tokens]
+
+print("\nStemmed Tokens:", stemmed_tokens)
