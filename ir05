@@ -1,0 +1,36 @@
+import os, tempfile, threading, http.server, functools
+import requests, pandas as pd
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+
+site = tempfile.mkdtemp()
+names = ["Laptop", "Mobile", "Mouse", "Keyboard"]
+
+html = "<ul>"
+for i, n in enumerate(names, 1):
+    with open(f"{site}/p{i}.html", "w") as f:
+        f.write(f"<p class='rating'>{i}</p>")
+    html += f"<li><a href='p{i}.html'>{n}</a><p class='price'>{i*1000}</p></li>"
+
+with open(f"{site}/index.html", "w") as f:
+    f.write(html + "</ul>")
+
+class Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *args): pass
+
+s = http.server.ThreadingHTTPServer(("127.0.0.1", 0),
+    functools.partial(Quiet, directory=site))
+threading.Thread(target=s.serve_forever, daemon=True).start()
+
+base = f"http://127.0.0.1:{s.server_port}/"
+soup = BeautifulSoup(requests.get(base+"index.html").text, "html.parser")
+
+rows = []
+for x in soup.select("li"):
+    link = urljoin(base, x.a["href"])
+    rating = BeautifulSoup(requests.get(link).text, "html.parser").select_one(".rating").text
+    rows.append([x.a.text, x.select_one(".price").text, rating, link])
+
+pd.DataFrame(rows, columns=["Name","Price","Rating","Link"]).to_csv("products.csv", index=False)
+print(pd.DataFrame(rows, columns=["Name","Price","Rating","Link"]))
+s.shutdown()
