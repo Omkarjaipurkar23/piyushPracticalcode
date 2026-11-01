@@ -1,0 +1,40 @@
+# Agglomerative Hierarchical Clustering
+
+# Step 1: Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import AgglomerativeClustering
+from sklearn.preprocessing import StandardScaler
+from scipy.cluster.hierarchy import dendrogram, linkage
+
+# Step 2: Load dataset
+df = pd.read_csv("Mall_Customers.csv")
+
+# Step 3: Select features
+X = df[['Annual Income (k$)', 'Spending Score (1-100)']]
+
+# Step 4: Scale the data
+X = StandardScaler().fit_transform(X)
+
+# Step 5: Create dendrogram
+linked = linkage(X, method='ward')
+dendrogram(linked)
+plt.title("Dendrogram")
+plt.xlabel("Customers")
+plt.ylabel("Distance")
+plt.show()
+
+# Step 6: Apply Agglomerative Clustering
+model = AgglomerativeClustering(n_clusters=5, linkage='ward')
+labels = model.fit_predict(X)
+
+# Step 7: Display clusters
+plt.scatter(X[:, 0], X[:, 1], c=labels)
+plt.title("Agglomerative Hierarchical Clustering")
+plt.xlabel("Annual Income")
+plt.ylabel("Spending Score")
+plt.show()
+
+# Step 8: Print cluster labels
+print("Cluster Labels:")
+print(labels)
