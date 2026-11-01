@@ -1,0 +1,43 @@
+# Email Spam Filtering using TF-IDF and Naive Bayes
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score
+
+# Step 1: Load dataset
+data = pd.read_csv("spam_ham_dataset.csv")
+
+# Step 2: Select messages and labels
+X = data["text"]
+y = data["label_num"]
+
+# Step 3: Split dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Step 4: Convert text into numerical form
+tfidf = TfidfVectorizer(stop_words="english")
+X_train = tfidf.fit_transform(X_train)
+X_test = tfidf.transform(X_test)
+
+# Step 5: Train Naive Bayes model
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+# Step 6: Check accuracy
+pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, pred))
+
+# Step 7: Predict user input
+msg = input("Enter an email message: ")
+msg = tfidf.transform([msg])
+
+result = model.predict(msg)[0]
+
+if result == 1:
+    print("Spam Email")
+else:
+    print("Not Spam (Ham)")
