@@ -1,0 +1,62 @@
+import pandas as pd
+from scipy.stats import ttest_ind
+import numpy as np
+
+# Step 1: Create RNA-Seq dataset (read counts)
+data = {
+    'Gene': ['BRCA1', 'TP53', 'EGFR', 'MYC', 'AKT1'],
+    'C1': [100, 200, 150, 120, 180],
+    'C2': [110, 190, 160, 115, 175],
+    'C3': [105, 210, 145, 125, 185],
+    'T1': [300, 190, 450, 350, 400],
+    'T2': [320, 200, 430, 330, 390],
+    'T3': [310, 195, 460, 340, 410]
+}
+
+df = pd.DataFrame(data).set_index('Gene')
+
+# Step 2: Calculate average expression
+df['Control'] = df[['C1', 'C2', 'C3']].mean(axis=1)
+df['Treatment'] = df[['T1', 'T2', 'T3']].mean(axis=1)
+
+# Step 3: Calculate log2 fold change
+df['Log2FC'] = np.log2((df['Treatment'] + 1) /
+                       (df['Control'] + 1))
+
+# Step 4: Perform statistical testing
+df['P-value'] = [
+    ttest_ind(df.loc[g, ['C1', 'C2', 'C3']],
+              df.loc[g, ['T1', 'T2', 'T3']]).pvalue
+    for g in df.index
+]
+
+# Step 5: Identify differentially expressed genes
+df['Result'] = df.apply(
+    lambda x: 'Upregulated' if x['Log2FC'] > 1 and x['P-value'] < 0.05
+    else 'Downregulated' if x['Log2FC'] < -1 and x['P-value'] < 0.05
+    else 'Not Significant', axis=1
+)
+
+# Step 6: Functional annotation
+functions = {
+    'BRCA1': 'DNA repair',
+    'TP53': 'Tumor suppression',
+    'EGFR': 'Cell growth',
+    'MYC': 'Cell proliferation',
+    'AKT1': 'Cell survival'
+}
+
+df['Function'] = df.index.map(functions)
+
+# Step 7: Display results
+print("\nRNA-Seq Analysis Results")
+print(df[['Control', 'Treatment', 'Log2FC',
+          'P-value', 'Result', 'Function']])
+
+print("\nDifferentially Expressed Genes:")
+print(df[df['Result'] != 'Not Significant'])
+
+print("\nBiological Interpretation:")
+for gene, row in df.iterrows():
+    if row['Result'] != 'Not Significant':
+        print(gene, "-", row['Result'], "-", row['Function'])
