@@ -1,0 +1,36 @@
+# Simple Inverted Index for Document Retrieval
+
+# Step 1: Create documents
+docs = {
+    1: "Heart disease prevention and healthy diet",
+    2: "Spam emails contain phishing links",
+    3: "Exercise reduces heart risk"
+}
+
+# Step 2: Build inverted index
+index = {}
+
+for doc_id, text in docs.items():
+    for word in text.lower().split():
+        index.setdefault(word, set()).add(doc_id)
+
+# Display inverted index
+print("Inverted Index:")
+
+for word, doc_ids in index.items():
+    print(word, ":", doc_ids)
+
+# Step 3: Take query from user
+query = input("\nEnter query: ").lower().split()
+
+# Step 4: Retrieve documents
+result = set(docs.keys())
+
+for word in query:
+    result = result & index.get(word, set())
+
+# Step 5: Display results
+print("\nDocuments found:", result)
+
+for doc_id in result:
+    print("Document", doc_id, ":", docs[doc_id])
