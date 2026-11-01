@@ -1,0 +1,60 @@
+# DNA Sequence Analysis
+
+# Step 1: Input DNA sequence
+dna_seq = input("Enter DNA sequence: ").upper()
+
+# Step 2: Find motifs
+def find_motifs(sequence, motif):
+    positions = []
+    for i in range(len(sequence) - len(motif) + 1):
+        if sequence[i:i + len(motif)] == motif:
+            positions.append(i + 1)
+    return positions
+
+# Calculate GC Content
+def gc_content(sequence):
+    sequence = sequence.strip().upper()
+
+    g_count = sequence.count("G")
+    c_count = sequence.count("C")
+    total = len(sequence)
+
+    gc_percentage = ((g_count + c_count) / total) * 100
+    return round(gc_percentage, 2)
+
+
+gc = gc_content(dna_seq)
+print("GC Content:", gc, "%")
+
+# Step 4: Identify coding regions
+def identify_coding_regions(sequence):
+    start = "ATG"
+    stops = ["TAA", "TAG", "TGA"]
+    regions = []
+
+    for i in range(len(sequence) - 2):
+        if sequence[i:i + 3] == start:
+            for j in range(i + 3, len(sequence) - 2, 3):
+                if sequence[j:j + 3] in stops:
+                    regions.append((i + 1, j + 3))
+                    break
+
+    return regions
+
+# Step 5: Input motifs
+motif1 = input("Enter first motif: ").upper()
+motif2 = input("Enter second motif: ").upper()
+
+# Step 6: Perform analysis
+motif1_pos = find_motifs(dna_seq, motif1)
+motif2_pos = find_motifs(dna_seq, motif2)
+gc = gc_content(dna_seq)
+regions = identify_coding_regions(dna_seq)
+
+# Step 7: Display report
+print("\n--- DNA SEQUENCE ANALYSIS REPORT ---")
+print("DNA Length:", len(dna_seq), "bases")
+print("Motif 1 Positions:", motif1_pos)
+print("Motif 2 Positions:", motif2_pos)
+print("GC Content:", round(gc, 2), "%")
+print("Coding Regions:", regions)
